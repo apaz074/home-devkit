@@ -4,3 +4,23 @@ result-*
 
 # Ignore automatically generated direnv output
 .direnv
+
+# --- User-Specific and Untracked Configuration ---
+
+# Ignore the environment file containing personal data (name, email, etc.).
+# Each user will create this file locally from the .example template.
+env.nix
+
+# --- User-Specific Directories ---
+# The goal is to track the empty directory structure via .gitkeep,
+# but ignore any files the user adds inside them.
+
+# Ignore the contents of the user's local modules directory...
+modules/*
+# ...but explicitly DO NOT ignore the .gitkeep file inside it.
+!modules/.gitkeep
+
+# Ignore the contents of the user's out-of-store dotfiles directory...
+dotfiles/*
+# ...but explicitly DO NOT ignore the .gitkeep file inside it.
+!dotfiles/.gitkeep
