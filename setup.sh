@@ -1,4 +1,18 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
+if [ -z "$_SCRIPT_RUNNING_WITH_PREFERRED_SHELL" ]; then
+    export _SCRIPT_RUNNING_WITH_PREFERRED_SHELL=1
+    if command -v zsh >/dev/null 2>&1; then
+        echo "\033[0;34mINFO: Zsh found. Re-executing with Zsh...\033[0m"
+        exec zsh "$0" "$@"
+    elif command -v bash >/dev/null 2>&1; then
+        echo "\033[0;34mINFO: Zsh not found, but Bash found. Re-executing with Bash...\033[0m"
+        exec bash "$0" "$@"
+    else
+        echo "\033[0;31mERROR: Neither Zsh nor Bash could be found. Cannot continue.\033[0m" >&2
+        exit 1
+    fi
+fi
 
 # Exit immediately if a command fails.
 set -e
