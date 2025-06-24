@@ -1,18 +1,14 @@
 #!/bin/sh
 
-if [ -z "$_SCRIPT_RUNNING_WITH_PREFERRED_SHELL" ]; then
-    export _SCRIPT_RUNNING_WITH_PREFERRED_SHELL=1
-    if command -v zsh >/dev/null 2>&1; then
-        echo "\033[0;34mINFO: Zsh found. Re-executing with Zsh...\033[0m"
-        exec zsh "$0" "$@"
-    elif command -v bash >/dev/null 2>&1; then
-        echo "\033[0;34mINFO: Zsh not found, but Bash found. Re-executing with Bash...\033[0m"
-        exec bash "$0" "$@"
-    else
-        echo "\033[0;31mERROR: Neither Zsh nor Bash could be found. Cannot continue.\033[0m" >&2
-        exit 1
-    fi
-fi
+# This script is designed to be run via curl.
+# It first loads its main logic into a variable, then finds the best
+# available shell (zsh or bash) to execute that logic.
+# This avoids issues with re-executing a script from a stream.
+
+# --- Main Script Logic (as a multi-line string) ---
+# The 'EOF' ensures that the shell does not try to expand variables ($)
+# inside this block. The content is read literally.
+read -r -d '' SCRIPT_LOGIC << 'EOF'
 
 # Exit immediately if a command fails.
 set -e
@@ -169,3 +165,22 @@ main() {
 
 # Execute the main function
 main
+
+EOF
+# --- End of Main Script Logic ---
+
+
+# --- The Dispatcher ---
+# This part runs first. It checks for the best shell and then executes
+# the SCRIPT_LOGIC variable using that shell.
+if command -v zsh >/dev/null 2>&1; then
+    echo "\033[0;34mINFO: Zsh found. Executing script with Zsh...\033[0m"
+    # Execute the script content stored in the variable
+    zsh -c "$SCRIPT_LOGIC"
+elif command -v bash >/dev/null 2>&1; then
+    echo "\033[0;34mINFO: Zsh not found, but Bash found. Executing script with Bash...\033[0m"
+    bash -c "$SCRIPT_LOGIC"
+else
+    echo "\033[0;31mERROR: Neither Zsh nor Bash could be found. Cannot continue.\033[0m" >&2
+    exit 1
+fi
